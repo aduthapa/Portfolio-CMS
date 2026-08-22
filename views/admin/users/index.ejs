@@ -13,8 +13,17 @@
         <td><a href="/admin/users/<%= u.id %>/edit"><strong><%= u.name %></strong></a><% if (u.id === currentUser.id) { %> <span class="badge badge-muted">You</span><% } %></td>
         <td><%= u.email %></td>
         <td><span class="badge badge-outline"><%= u.role %></span></td>
-        <td><%- u.active ? '<span class="badge badge-published">Active</span>' : '<span class="badge badge-archived">Disabled</span>' %></td>
+        <td><%- u.active ? '<span class="badge badge-published">Active</span>' : '<span class="badge badge-new">Pending approval</span>' %></td>
         <td class="table-actions">
+          <% if (!u.active) { %>
+          <form method="post" action="/admin/users/<%= u.id %>?_method=PUT">
+            <input type="hidden" name="name" value="<%= u.name %>" />
+            <input type="hidden" name="email" value="<%= u.email %>" />
+            <input type="hidden" name="role" value="<%= u.role %>" />
+            <input type="hidden" name="active" value="on" />
+            <button class="btn btn-sm btn-secondary" type="submit">Approve</button>
+          </form>
+          <% } %>
           <a class="btn btn-sm btn-ghost" href="/admin/users/<%= u.id %>/edit">Edit</a>
           <% if (u.id !== currentUser.id) { %>
           <form method="post" action="/admin/users/<%= u.id %>?_method=DELETE" onsubmit="return confirm('Remove this team member?');">

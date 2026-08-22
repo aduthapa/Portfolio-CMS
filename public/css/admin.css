@@ -56,6 +56,7 @@
 .auth-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(160deg, var(--brand-dark), var(--brand)); }
 .auth-card { background: var(--surface); border-radius: var(--radius); padding: 36px; width: 360px; box-shadow: var(--shadow); }
 .auth-title { margin-bottom: 4px; }
+.auth-links { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; font-size: 0.85rem; flex-wrap: wrap; }
 
 @media (max-width: 900px) {
   .admin-sidebar { position: fixed; inset: 0 auto 0 0; transform: translateX(-100%); transition: transform 0.2s ease; z-index: 30; }
