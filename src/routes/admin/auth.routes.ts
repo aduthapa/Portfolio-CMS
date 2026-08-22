@@ -6,6 +6,7 @@ import { redirectIfAuthed } from "../../middleware/auth";
 import { getSiteSettings } from "../../middleware/locals";
 import { sendPasswordResetOtpEmail } from "../../config/mailer";
 import { generateOtpCode, hashOtpCode, verifyOtpCode } from "../../utils/otp";
+import { logError, logInfo } from "../../utils/logger";
 
 export const authRouter = Router();
 
@@ -132,8 +133,9 @@ authRouter.post(
         try {
           const settings = await getSiteSettings();
           await sendPasswordResetOtpEmail(user.email, code, settings.siteName);
+          logInfo("forgot-password", `Reset email sent to ${user.email}`);
         } catch (err) {
-          console.error("Failed to send password reset email:", err);
+          logError(`forgot-password: sending reset email to ${user.email}`, err);
         }
       }
     }

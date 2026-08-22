@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { MulterError } from "multer";
-import { env } from "../config/env";
+import { logError } from "../utils/logger";
 
 export function notFoundHandler(req: Request, res: Response) {
   res.status(404).render(req.path.startsWith("/admin") ? "admin/404" : "public/404", {
@@ -23,9 +23,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     message = err.message;
   }
 
-  if (!env.isProduction) {
-    console.error(err);
-  }
+  logError(`${req.method} ${req.originalUrl}`, err);
 
   const isAdmin = req.path.startsWith("/admin");
   if (isAdmin && req.flash) {

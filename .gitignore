@@ -3,6 +3,9 @@ dist/
 .env
 *.log
 npm-debug.log*
+logs/
+# Passenger's restart-trigger directory (cPanel Node.js Selector).
+tmp/
 
 # Uploaded media (persisted on the host, not in version control).
 # The upload middleware creates these directories on demand, so nothing
