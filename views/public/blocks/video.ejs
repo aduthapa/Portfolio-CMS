@@ -1,0 +1,11 @@
+<% if (block.embedUrl) { %>
+<div class="container block-section narrow">
+  <div class="block-video-frame">
+    <iframe src="<%= block.embedUrl %>" title="Video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </div>
+</div>
+<% } else if (block.content.url) { %>
+<div class="container block-section narrow">
+  <a href="<%= block.content.url %>" target="_blank" rel="noopener">Watch video &rarr;</a>
+</div>
+<% } %>

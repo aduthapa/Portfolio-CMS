@@ -1,0 +1,11 @@
+<% if (block.content.images && block.content.images.length) { %>
+<div class="container block-section">
+  <div class="block-gallery-grid">
+    <% block.content.images.forEach(function (img) { %>
+      <a class="block-gallery-item" href="<%= img.url %>" target="_blank" rel="noopener">
+        <img src="<%= img.url %>" alt="<%= img.caption || '' %>" loading="lazy" />
+      </a>
+    <% }) %>
+  </div>
+</div>
+<% } %>

@@ -90,4 +90,111 @@
     });
     if (closeBtn) closeBtn.addEventListener("click", function () { dialog.close(); });
   }
+
+  // Page builder: drag-and-drop reordering of blocks, and the shared
+  // edit dialog that shows only the fields relevant to each block's type.
+  var blockList = document.getElementById("blockList");
+  if (blockList) {
+    var draggedBlock = null;
+
+    blockList.addEventListener("dragstart", function (e) {
+      draggedBlock = e.target.closest(".block-row");
+      if (draggedBlock) draggedBlock.classList.add("dragging");
+    });
+
+    blockList.addEventListener("dragend", function () {
+      if (draggedBlock) draggedBlock.classList.remove("dragging");
+      draggedBlock = null;
+      persistBlockOrder();
+    });
+
+    blockList.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      var target = e.target.closest(".block-row");
+      if (!target || target === draggedBlock || !draggedBlock) return;
+      var rect = target.getBoundingClientRect();
+      var before = e.clientY - rect.top < rect.height / 2;
+      blockList.insertBefore(draggedBlock, before ? target : target.nextSibling);
+    });
+
+    function persistBlockOrder() {
+      var ids = Array.prototype.map.call(
+        blockList.querySelectorAll(".block-row"),
+        function (row) { return Number(row.getAttribute("data-id")); }
+      );
+      fetch(blockList.getAttribute("data-reorder-url"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order: ids }),
+      }).catch(function () {});
+    }
+
+    var blockDialog = document.getElementById("editBlockDialog");
+    var blockForm = document.getElementById("editBlockForm");
+    var closeBlockBtn = document.getElementById("closeEditBlockDialog");
+    var fieldGroups = blockDialog.querySelectorAll("[data-fields]");
+
+    function renderGalleryExisting(images) {
+      var container = document.getElementById("f-gallery-existing");
+      container.innerHTML = "";
+      images.forEach(function (img) {
+        var wrap = document.createElement("label");
+        wrap.className = "gallery-edit-item";
+        wrap.innerHTML =
+          '<img src="' + img.url + '" alt="" />' +
+          '<span><input type="checkbox" name="removeUrls" value="' + img.url + '" /> Remove</span>';
+        container.appendChild(wrap);
+      });
+    }
+
+    document.querySelectorAll(".edit-block-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-id");
+        var type = btn.getAttribute("data-type");
+        var content = JSON.parse(btn.getAttribute("data-content") || "{}");
+
+        blockForm.action = "/admin/builder/" + id + "?_method=PUT";
+
+        fieldGroups.forEach(function (group) {
+          group.style.display = group.getAttribute("data-fields") === type ? "" : "none";
+        });
+
+        if (type === "HEADING") {
+          document.getElementById("f-heading-text").value = content.text || "";
+          document.getElementById("f-heading-level").value = content.level || "h2";
+        } else if (type === "TEXT") {
+          document.getElementById("f-text-text").value = content.text || "";
+        } else if (type === "IMAGE") {
+          var preview = document.getElementById("f-image-preview");
+          if (content.url) {
+            preview.src = content.url;
+            preview.style.display = "block";
+          } else {
+            preview.style.display = "none";
+          }
+          document.getElementById("f-image-caption").value = content.caption || "";
+        } else if (type === "GALLERY") {
+          renderGalleryExisting(content.images || []);
+          var existingField = blockForm.querySelector('input[name="existingImages"]');
+          if (!existingField) {
+            existingField = document.createElement("input");
+            existingField.type = "hidden";
+            existingField.name = "existingImages";
+            blockForm.appendChild(existingField);
+          }
+          existingField.value = JSON.stringify(content.images || []);
+        } else if (type === "BUTTON") {
+          document.getElementById("f-button-label").value = content.label || "";
+          document.getElementById("f-button-url").value = content.url || "";
+          document.getElementById("f-button-style").value = content.style || "primary";
+        } else if (type === "VIDEO") {
+          document.getElementById("f-video-url").value = content.url || "";
+        }
+
+        if (typeof blockDialog.showModal === "function") blockDialog.showModal();
+      });
+    });
+
+    if (closeBlockBtn) closeBlockBtn.addEventListener("click", function () { blockDialog.close(); });
+  }
 })();

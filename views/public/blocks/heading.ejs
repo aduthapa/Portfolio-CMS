@@ -1,0 +1,6 @@
+<%
+var level = ['h1','h2','h3'].includes(block.content.level) ? block.content.level : 'h2';
+%>
+<div class="container block-section">
+  <<%= level %> class="block-heading block-heading-<%= level %>"><%= block.content.text %></<%= level %>>
+</div>

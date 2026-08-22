@@ -2,68 +2,22 @@
 
 <section class="hero">
   <div class="container hero-inner">
-    <h1><%= settings.tagline || 'Representing the best of the best.' %></h1>
-    <p class="hero-sub">Discover the celebrities, influencers, and artists behind <%= settings.siteName %> — browse portfolios, press, and booking info in one place.</p>
+    <h1><%= settings.tagline || 'Welcome to my portfolio.' %></h1>
     <div class="hero-actions">
-      <a class="btn btn-primary btn-lg" href="/profiles">Browse talent</a>
-      <a class="btn btn-ghost btn-lg" href="/contact">Get in touch</a>
+      <a class="btn btn-primary btn-lg" href="/contact">Get in touch</a>
     </div>
   </div>
 </section>
 
-<section class="container section">
-  <div class="chip-row">
-    <% categoryOptions.forEach(function (c) { %>
-      <a class="chip" href="/profiles?category=<%= c.value %>"><%= c.label %></a>
-    <% }) %>
+<% if (blocks.length === 0) { %>
+  <div class="container section empty-state">
+    <p class="muted">This page hasn't been built yet.</p>
+    <% if (currentUser) { %><a class="btn btn-primary" href="/admin/builder">Open the page builder &rarr;</a><% } %>
   </div>
-</section>
-
-<% if (featured.length) { %>
-<section class="container section">
-  <div class="section-header">
-    <h2>Featured talent</h2>
-    <a class="link" href="/profiles">View all &rarr;</a>
-  </div>
-  <div class="card-grid">
-    <% featured.forEach(function (p) { %>
-      <a class="profile-card" href="/profiles/<%= p.slug %>">
-        <div class="profile-card-media" style="<%= p.avatarUrl ? `background-image:url('${p.avatarUrl}')` : '' %>">
-          <% if (!p.avatarUrl) { %><span class="profile-card-initials"><%= (p.stageName || p.fullName).slice(0,1) %></span><% } %>
-          <span class="badge badge-featured">Featured</span>
-        </div>
-        <div class="profile-card-body">
-          <h3><%= p.stageName || p.fullName %></h3>
-          <p class="muted"><%= p.shortBio || '' %></p>
-        </div>
-      </a>
-    <% }) %>
-  </div>
-</section>
+<% } else { %>
+  <% blocks.forEach(function (block) { %>
+    <%- include('blocks/' + block.type.toLowerCase(), { block: block }) %>
+  <% }) %>
 <% } %>
-
-<section class="container section">
-  <div class="section-header">
-    <h2>New on the roster</h2>
-    <span class="muted"><%= totalProfiles %> total profiles</span>
-  </div>
-  <% if (recent.length === 0) { %>
-    <p class="muted">No profiles published yet — check back soon.</p>
-  <% } else { %>
-  <div class="card-grid">
-    <% recent.forEach(function (p) { %>
-      <a class="profile-card" href="/profiles/<%= p.slug %>">
-        <div class="profile-card-media" style="<%= p.avatarUrl ? `background-image:url('${p.avatarUrl}')` : '' %>">
-          <% if (!p.avatarUrl) { %><span class="profile-card-initials"><%= (p.stageName || p.fullName).slice(0,1) %></span><% } %>
-        </div>
-        <div class="profile-card-body">
-          <h3><%= p.stageName || p.fullName %></h3>
-          <p class="muted"><%= p.shortBio || '' %></p>
-        </div>
-      </a>
-    <% }) %>
-  </div>
-  <% } %>
-</section>
 
 <%- include('../partials/public-footer') %>

@@ -1,0 +1,8 @@
+<% if (block.content.url) { %>
+<div class="container block-section narrow">
+  <figure class="block-image">
+    <img src="<%= block.content.url %>" alt="<%= block.content.caption || '' %>" loading="lazy" />
+    <% if (block.content.caption) { %><figcaption class="muted small"><%= block.content.caption %></figcaption><% } %>
+  </figure>
+</div>
+<% } %>

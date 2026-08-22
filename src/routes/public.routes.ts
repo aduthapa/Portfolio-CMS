@@ -3,6 +3,7 @@ import { prisma } from "../config/prisma";
 import { asyncHandler } from "../utils/asyncHandler";
 import { CATEGORY_LABELS, CATEGORY_OPTIONS } from "../utils/categories";
 import { parsePage, buildPageList } from "../utils/pagination";
+import { getVideoEmbedUrl } from "../utils/video";
 import { ProfileCategory } from "@prisma/client";
 
 export const publicRouter = Router();
@@ -10,27 +11,20 @@ export const publicRouter = Router();
 publicRouter.get(
   "/",
   asyncHandler(async (_req, res) => {
-    const [featured, recent, totalProfiles] = await Promise.all([
-      prisma.profile.findMany({
-        where: { status: "PUBLISHED", featured: true },
-        orderBy: { updatedAt: "desc" },
-        take: 6,
-      }),
-      prisma.profile.findMany({
-        where: { status: "PUBLISHED" },
-        orderBy: { createdAt: "desc" },
-        take: 8,
-      }),
-      prisma.profile.count({ where: { status: "PUBLISHED" } }),
-    ]);
-
-    res.render("public/home", {
-      title: undefined,
-      featured,
-      recent,
-      totalProfiles,
-      categoryOptions: CATEGORY_OPTIONS,
+    const blockRows = await prisma.pageBlock.findMany({
+      where: { visible: true },
+      orderBy: { sortOrder: "asc" },
     });
+
+    const blocks = blockRows.map((b) => {
+      if (b.type === "VIDEO") {
+        const content = b.content as { url?: string };
+        return { ...b, embedUrl: content.url ? getVideoEmbedUrl(content.url) : null };
+      }
+      return b;
+    });
+
+    res.render("public/home", { title: undefined, blocks });
   })
 );
 

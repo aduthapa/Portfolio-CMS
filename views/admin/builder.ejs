@@ -1,0 +1,123 @@
+<%- include('../partials/admin-header') %>
+
+<div class="panel">
+  <h2>Add a block</h2>
+  <p class="muted small">Click to add it to the bottom of your page, then edit its content and drag it into place.</p>
+  <div class="block-palette">
+    <% [
+      ['HEADING', 'Heading'], ['TEXT', 'Text'], ['IMAGE', 'Image'], ['GALLERY', 'Gallery'],
+      ['BUTTON', 'Button'], ['VIDEO', 'Video'], ['DIVIDER', 'Divider']
+    ].forEach(function (t) { %>
+      <form method="post" action="/admin/builder">
+        <input type="hidden" name="type" value="<%= t[0] %>" />
+        <button class="btn btn-secondary btn-sm" type="submit">+ <%= t[1] %></button>
+      </form>
+    <% }) %>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>Your page (<%= blocks.length %> blocks)</h2>
+    <a class="btn btn-ghost btn-sm" href="/" target="_blank">View public page &rarr;</a>
+  </div>
+  <% if (blocks.length === 0) { %>
+    <p class="muted">No blocks yet — add one above to start building your page.</p>
+  <% } else { %>
+  <div class="block-list" id="blockList" data-reorder-url="/admin/builder/reorder">
+    <% blocks.forEach(function (b) { %>
+    <div class="block-row <%= b.visible ? '' : 'block-row-hidden' %>" draggable="true" data-id="<%= b.id %>">
+      <span class="block-drag-handle" title="Drag to reorder">&#8942;&#8942;</span>
+      <span class="badge badge-outline block-type-badge"><%= b.type %></span>
+      <div class="block-preview">
+        <% if (b.type === 'HEADING') { %>
+          <strong><%= b.content.text || '(empty heading)' %></strong>
+        <% } else if (b.type === 'TEXT') { %>
+          <span><%= (b.content.text || '').slice(0, 90) %><%= (b.content.text || '').length > 90 ? '…' : '' %></span>
+        <% } else if (b.type === 'IMAGE') { %>
+          <% if (b.content.url) { %><img class="block-preview-thumb" src="<%= b.content.url %>" alt="" /><% } %>
+          <span class="muted small"><%= b.content.caption || '(no caption)' %></span>
+        <% } else if (b.type === 'GALLERY') { %>
+          <span class="muted small"><%= (b.content.images || []).length %> image(s)</span>
+        <% } else if (b.type === 'BUTTON') { %>
+          <span><%= b.content.label %> &rarr; <span class="muted small"><%= b.content.url %></span></span>
+        <% } else if (b.type === 'VIDEO') { %>
+          <span class="muted small"><%= b.content.url || '(no video URL set)' %></span>
+        <% } else if (b.type === 'DIVIDER') { %>
+          <span class="muted small">— divider —</span>
+        <% } %>
+      </div>
+      <div class="table-actions">
+        <form method="post" action="/admin/builder/<%= b.id %>/visibility?_method=PUT">
+          <button class="btn btn-sm btn-ghost" type="submit"><%= b.visible ? 'Hide' : 'Show' %></button>
+        </form>
+        <button type="button" class="btn btn-sm btn-ghost edit-block-btn"
+          data-id="<%= b.id %>" data-type="<%= b.type %>" data-content='<%- JSON.stringify(b.content) %>'>Edit</button>
+        <form method="post" action="/admin/builder/<%= b.id %>?_method=DELETE" onsubmit="return confirm('Delete this block?');">
+          <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+        </form>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+  <% } %>
+</div>
+
+<dialog id="editBlockDialog" class="modal">
+  <form method="post" id="editBlockForm" enctype="multipart/form-data" class="stack">
+    <h2>Edit block</h2>
+    <input type="hidden" name="_method" value="PUT" />
+
+    <div data-fields="HEADING" class="field-group">
+      <label class="field"><span>Heading text</span><input type="text" name="text" id="f-heading-text" /></label>
+      <label class="field"><span>Size</span>
+        <select name="level" id="f-heading-level">
+          <option value="h1">Large (h1)</option>
+          <option value="h2">Medium (h2)</option>
+          <option value="h3">Small (h3)</option>
+        </select>
+      </label>
+    </div>
+
+    <div data-fields="TEXT" class="field-group">
+      <label class="field"><span>Text</span><textarea name="text" id="f-text-text" rows="6"></textarea></label>
+    </div>
+
+    <div data-fields="IMAGE" class="field-group">
+      <img id="f-image-preview" class="image-preview" style="display:none" />
+      <label class="field"><span>Replace image</span><input type="file" name="image" accept="image/*" /></label>
+      <label class="field"><span>Caption</span><input type="text" name="caption" id="f-image-caption" /></label>
+    </div>
+
+    <div data-fields="GALLERY" class="field-group">
+      <div id="f-gallery-existing" class="gallery-edit-grid"></div>
+      <label class="field"><span>Add images</span><input type="file" name="galleryImages" accept="image/*" multiple /></label>
+    </div>
+
+    <div data-fields="BUTTON" class="field-group">
+      <label class="field"><span>Button label</span><input type="text" name="label" id="f-button-label" /></label>
+      <label class="field"><span>Link URL</span><input type="url" name="url" id="f-button-url" /></label>
+      <label class="field"><span>Style</span>
+        <select name="style" id="f-button-style">
+          <option value="primary">Primary</option>
+          <option value="secondary">Secondary</option>
+        </select>
+      </label>
+    </div>
+
+    <div data-fields="VIDEO" class="field-group">
+      <label class="field"><span>YouTube or Vimeo URL</span><input type="url" name="url" id="f-video-url" /></label>
+    </div>
+
+    <div data-fields="DIVIDER" class="field-group">
+      <p class="muted small">A divider has no content to edit — just drag it into place.</p>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" id="closeEditBlockDialog">Cancel</button>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<%- include('../partials/admin-footer') %>

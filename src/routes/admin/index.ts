@@ -10,6 +10,7 @@ import { settingsRouter } from "./settings.routes";
 import { usersRouter } from "./users.routes";
 import { createSimpleResourceRouter } from "./simpleResource";
 import { pressConfig, awardsConfig, eventsConfig, testimonialsConfig } from "./resources";
+import { builderRouter } from "./builder.routes";
 
 export const adminRouter = Router();
 
@@ -19,6 +20,7 @@ adminRouter.use("/", authRouter);
 adminRouter.use(requireAuth);
 
 adminRouter.use("/", dashboardRouter);
+adminRouter.use("/builder", builderRouter);
 adminRouter.use("/profiles", profilesRouter);
 adminRouter.use("/profiles/:profileId/portfolio", portfolioRouter);
 adminRouter.use("/profiles/:profileId/press", createSimpleResourceRouter(pressConfig));
