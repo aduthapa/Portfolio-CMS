@@ -2,8 +2,10 @@ import { Router } from "express";
 import { prisma } from "../../config/prisma";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { uploadMediaAsset, publicUrlFor } from "../../middleware/upload";
-import { invalidateSiteSettingsCache } from "../../middleware/locals";
+import { invalidateSiteSettingsCache, getSiteSettings } from "../../middleware/locals";
 import { requireAdmin } from "../../middleware/auth";
+import { sendTestEmail } from "../../config/mailer";
+import { logError } from "../../utils/logger";
 
 export const settingsRouter = Router();
 
@@ -49,6 +51,24 @@ settingsRouter.put(
 
     invalidateSiteSettingsCache();
     req.flash("success", "Settings updated.");
+    res.redirect("/admin/settings");
+  })
+);
+
+settingsRouter.post(
+  "/test-email",
+  requireAdmin,
+  asyncHandler(async (req, res) => {
+    const to = req.currentUser!.email;
+    try {
+      const settings = await getSiteSettings();
+      await sendTestEmail(to, settings.siteName);
+      req.flash("success", `Test email sent to ${to}. Check your inbox (and spam folder).`);
+    } catch (err) {
+      logError("settings: send test email", err);
+      const detail = err instanceof Error ? err.message : String(err);
+      req.flash("error", `Test email failed: ${detail}`);
+    }
     res.redirect("/admin/settings");
   })
 );

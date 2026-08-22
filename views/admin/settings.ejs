@@ -41,4 +41,12 @@
   </div>
 </form>
 
+<div class="panel">
+  <h2>Email delivery</h2>
+  <p class="muted small">Sends a test email to your own account (<%= currentUser.email %>) using whatever email transport is currently configured (SMTP or Brevo API). Useful for confirming outbound email actually works without needing terminal/log access.</p>
+  <form method="post" action="/admin/settings/test-email">
+    <button class="btn btn-secondary" type="submit">Send test email to <%= currentUser.email %></button>
+  </form>
+</div>
+
 <%- include('../partials/admin-footer') %>

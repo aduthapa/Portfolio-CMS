@@ -24,4 +24,10 @@ export const env = {
     pass: process.env.SMTP_PASS || "",
     from: process.env.SMTP_FROM || process.env.SMTP_USER || "no-reply@localhost",
   },
+  // Optional: when set, mail is sent over Brevo's HTTPS API (port 443)
+  // instead of raw SMTP. Many shared hosts block outbound SMTP ports
+  // (25/465/587) entirely, which HTTPS never hits since it's the same
+  // port every web page uses. Get this from Brevo → SMTP & API → API Keys
+  // (a different value from the SMTP password).
+  brevoApiKey: process.env.BREVO_API_KEY || "",
 };
