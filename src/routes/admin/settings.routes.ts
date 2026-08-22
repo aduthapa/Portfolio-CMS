@@ -62,8 +62,11 @@ settingsRouter.post(
     const to = req.currentUser!.email;
     try {
       const settings = await getSiteSettings();
-      await sendTestEmail(to, settings.siteName);
-      req.flash("success", `Test email sent to ${to}. Check your inbox (and spam folder).`);
+      const result = await sendTestEmail(to, settings.siteName);
+      req.flash(
+        "success",
+        `Request accepted for ${to} — check your inbox (and spam folder). Raw response: ${result}`
+      );
     } catch (err) {
       logError("settings: send test email", err);
       const detail = err instanceof Error ? err.message : String(err);
