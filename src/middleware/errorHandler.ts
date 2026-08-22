@@ -13,21 +13,29 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   let status = 500;
   let message = "Something went wrong. Please try again.";
 
+  const isAdmin = req.path.startsWith("/admin");
+  // Admins are authenticated and the detail is genuinely useful for
+  // self-diagnosis, so admin-facing flash messages keep the real error.
+  // Public visitors never see internals like file paths or template
+  // source snippets (which EJS embeds directly in its error messages).
+  let adminMessage = message;
+
   if (err instanceof MulterError) {
     status = 400;
-    message = err.code === "LIMIT_FILE_SIZE" ? "That file is too large." : err.message;
+    message = err.code === "LIMIT_FILE_SIZE" ? "That file is too large." : "There was a problem with your upload.";
+    adminMessage = err.message;
   } else if (err instanceof Error && (err as { status?: number }).status) {
     status = (err as { status?: number }).status as number;
     message = err.message;
+    adminMessage = err.message;
   } else if (err instanceof Error) {
-    message = err.message;
+    adminMessage = err.message;
   }
 
   logError(`${req.method} ${req.originalUrl}`, err);
 
-  const isAdmin = req.path.startsWith("/admin");
   if (isAdmin && req.flash) {
-    req.flash("error", message);
+    req.flash("error", adminMessage);
     return res.redirect("back");
   }
 
