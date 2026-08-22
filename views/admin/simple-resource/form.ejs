@@ -1,0 +1,24 @@
+<%- include('../../partials/admin-header') %>
+
+<% var isEdit = !!item; %>
+<form method="post" action="<%= isEdit ? basePath + '/' + item.id + '?_method=PUT' : basePath %>" class="panel stack">
+  <% config.fields.forEach(function (field) { %>
+    <% var raw = isEdit ? item[field.name] : null; %>
+    <% var value = raw instanceof Date ? raw.toISOString().slice(0, field.type === 'date' ? 10 : 16) : (raw !== null && raw !== undefined ? raw : ''); %>
+    <label class="field">
+      <span><%= field.label %><%= field.required ? ' *' : '' %></span>
+      <% if (field.type === 'textarea') { %>
+        <textarea name="<%= field.name %>" rows="4" <%= field.required ? 'required' : '' %>><%= value %></textarea>
+      <% } else { %>
+        <input type="<%= field.type %>" name="<%= field.name %>" value="<%= value %>"
+          placeholder="<%= field.placeholder || '' %>" <%= field.required ? 'required' : '' %> />
+      <% } %>
+    </label>
+  <% }) %>
+  <div class="form-actions">
+    <a class="btn btn-ghost" href="<%= basePath %>">Cancel</a>
+    <button class="btn btn-primary" type="submit"><%= isEdit ? 'Save changes' : 'Create' %></button>
+  </div>
+</form>
+
+<%- include('../../partials/admin-footer') %>

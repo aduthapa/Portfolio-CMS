@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %> — <%= settings.siteName %> Admin</title>
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <style>:root { --brand: <%= settings.primaryColor %>; }</style>
+</head>
+<body class="auth-body">
+  <main class="auth-card">
+    <h1 class="auth-title"><%= settings.siteName %></h1>
+    <p class="muted">Sign in to manage profiles, portfolios, and inquiries.</p>
+    <%- include('../partials/flash') %>
+    <form method="post" action="/admin/login" class="stack">
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" required autofocus autocomplete="username" />
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" name="password" required autocomplete="current-password" />
+      </label>
+      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+  </main>
+</body>
+</html>

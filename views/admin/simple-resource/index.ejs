@@ -1,0 +1,36 @@
+<%- include('../../partials/admin-header') %>
+
+<div class="toolbar">
+  <a class="btn btn-ghost" href="/admin/profiles/<%= profile.id %>/edit">&larr; Back to <%= profile.stageName || profile.fullName %></a>
+  <a class="btn btn-primary" href="<%= basePath %>/new">+ Add <%= config.resourceLabel.toLowerCase() %></a>
+</div>
+
+<div class="panel">
+  <% if (items.length === 0) { %>
+    <p class="muted">No <%= config.resourcePluralLabel.toLowerCase() %> yet.</p>
+  <% } else { %>
+  <table class="table">
+    <thead><tr><th><%= config.resourcePluralLabel %></th><th></th></tr></thead>
+    <tbody>
+      <% items.forEach(function (item) { %>
+      <tr>
+        <td>
+          <strong><%= item[config.viewTitleField] %></strong>
+          <% if (config.viewSubField && item[config.viewSubField]) { %>
+            <span class="muted"> &middot; <%= item[config.viewSubField] instanceof Date ? item[config.viewSubField].toDateString() : item[config.viewSubField] %></span>
+          <% } %>
+        </td>
+        <td class="table-actions">
+          <a class="btn btn-sm btn-ghost" href="<%= basePath %>/<%= item.id %>/edit">Edit</a>
+          <form method="post" action="<%= basePath %>/<%= item.id %>?_method=DELETE" onsubmit="return confirm('Delete this <%= config.resourceLabel.toLowerCase() %>?');">
+            <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
+
+<%- include('../../partials/admin-footer') %>

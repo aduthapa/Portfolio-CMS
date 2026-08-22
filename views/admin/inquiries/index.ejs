@@ -1,0 +1,57 @@
+<%- include('../../partials/admin-header') %>
+
+<div class="toolbar">
+  <form method="get" class="filter-bar">
+    <select name="status" onchange="this.form.submit()">
+      <option value="">All statuses</option>
+      <% statuses.forEach(function (s) { %>
+        <option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s.replace('_', ' ') %></option>
+      <% }) %>
+    </select>
+  </form>
+  <span class="muted"><%= total %> inquir<%= total === 1 ? 'y' : 'ies' %></span>
+</div>
+
+<div class="panel">
+  <% if (inquiries.length === 0) { %>
+    <p class="muted">No inquiries yet.</p>
+  <% } else { %>
+  <table class="table">
+    <thead><tr><th>From</th><th>Regarding</th><th>Message</th><th>Received</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <% inquiries.forEach(function (i) { %>
+      <tr>
+        <td>
+          <strong><%= i.name %></strong>
+          <div class="muted small"><a href="mailto:<%= i.email %>"><%= i.email %></a><% if (i.phone) { %> &middot; <%= i.phone %><% } %></div>
+        </td>
+        <td><%= i.profile ? (i.profile.stageName || i.profile.fullName) : 'General' %><% if (i.subject) { %><div class="muted small"><%= i.subject %></div><% } %></td>
+        <td class="truncate"><%= i.message %></td>
+        <td class="muted small"><%= i.createdAt.toLocaleString() %></td>
+        <td>
+          <form method="post" action="/admin/inquiries/<%= i.id %>/status?_method=PUT" class="inline-fields">
+            <select name="status" onchange="this.form.submit()">
+              <% statuses.forEach(function (s) { %>
+                <option value="<%= s %>" <%= i.status === s ? 'selected' : '' %>><%= s.replace('_', ' ') %></option>
+              <% }) %>
+            </select>
+          </form>
+        </td>
+        <td>
+          <form method="post" action="/admin/inquiries/<%= i.id %>?_method=DELETE" onsubmit="return confirm('Delete this inquiry?');">
+            <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
+
+<%- include('../../partials/pagination', {
+  page: page, totalPages: totalPages, pageList: pageList, basePath: '/admin/inquiries',
+  extraQuery: 'status=' + encodeURIComponent(status)
+}) %>
+
+<%- include('../../partials/admin-footer') %>

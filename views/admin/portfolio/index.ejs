@@ -1,0 +1,70 @@
+<%- include('../../partials/admin-header') %>
+
+<div class="toolbar">
+  <a class="btn btn-ghost" href="/admin/profiles/<%= profile.id %>/edit">&larr; Back to <%= profile.stageName || profile.fullName %></a>
+</div>
+
+<div class="panel">
+  <h2>Add portfolio item</h2>
+  <form method="post" action="/admin/profiles/<%= profile.id %>/portfolio" enctype="multipart/form-data" class="form-grid-2">
+    <label class="field"><span>Title</span><input type="text" name="title" placeholder="Untitled" /></label>
+    <label class="field"><span>Category</span><input type="text" name="category" placeholder="e.g. Music, Live, Editorial" /></label>
+    <label class="field full-width"><span>Description</span><textarea name="description" rows="2"></textarea></label>
+    <label class="field"><span>Image or video file *</span><input type="file" name="media" accept="image/*,video/*" required /></label>
+    <label class="field checkbox-field"><input type="checkbox" name="featured" /> <span>Feature this item</span></label>
+    <div class="full-width"><button class="btn btn-primary" type="submit">Add to portfolio</button></div>
+  </form>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>Gallery (<%= items.length %>)</h2>
+    <% if (items.length > 1) { %><span class="muted small">Drag tiles to reorder</span><% } %>
+  </div>
+  <% if (items.length === 0) { %>
+    <p class="muted">No portfolio items yet.</p>
+  <% } else { %>
+  <div class="portfolio-admin-grid" id="portfolioSortable" data-reorder-url="/admin/profiles/<%= profile.id %>/portfolio/reorder">
+    <% items.forEach(function (item) { %>
+    <div class="portfolio-admin-tile" draggable="true" data-id="<%= item.id %>">
+      <% if (item.mediaType === 'VIDEO') { %>
+        <video src="<%= item.mediaUrl %>" muted></video>
+      <% } else { %>
+        <img src="<%= item.mediaUrl %>" alt="<%= item.title %>" />
+      <% } %>
+      <div class="portfolio-admin-tile-body">
+        <strong><%= item.title %></strong>
+        <% if (item.featured) { %><span class="badge badge-featured">Featured</span><% } %>
+        <div class="table-actions">
+          <button type="button" class="btn btn-sm btn-ghost edit-portfolio-item"
+            data-id="<%= item.id %>" data-title="<%= item.title %>"
+            data-description="<%= item.description || '' %>" data-category="<%= item.category || '' %>"
+            data-featured="<%= item.featured %>">Edit</button>
+          <form method="post" action="/admin/profiles/<%= profile.id %>/portfolio/<%= item.id %>?_method=DELETE" onsubmit="return confirm('Delete this portfolio item?');">
+            <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+  <% } %>
+</div>
+
+<dialog id="editPortfolioDialog" class="modal">
+  <form method="post" id="editPortfolioForm" enctype="multipart/form-data" class="stack">
+    <h2>Edit portfolio item</h2>
+    <input type="hidden" name="_method" value="PUT" />
+    <label class="field"><span>Title</span><input type="text" name="title" id="editTitle" /></label>
+    <label class="field"><span>Category</span><input type="text" name="category" id="editCategory" /></label>
+    <label class="field"><span>Description</span><textarea name="description" id="editDescription" rows="2"></textarea></label>
+    <label class="field"><span>Replace file (optional)</span><input type="file" name="media" accept="image/*,video/*" /></label>
+    <label class="field checkbox-field"><input type="checkbox" name="featured" id="editFeatured" /> <span>Feature this item</span></label>
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" id="closeEditDialog">Cancel</button>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<%- include('../../partials/admin-footer') %>

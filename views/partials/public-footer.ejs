@@ -1,0 +1,19 @@
+  </main>
+  <footer class="site-footer">
+    <div class="container site-footer-inner">
+      <div>
+        <strong><%= settings.siteName %></strong>
+        <% if (settings.tagline) { %><p class="muted"><%= settings.tagline %></p><% } %>
+      </div>
+      <div class="footer-links">
+        <% if (settings.instagramUrl) { %><a href="<%= settings.instagramUrl %>" target="_blank" rel="noopener">Instagram</a><% } %>
+        <% if (settings.twitterUrl) { %><a href="<%= settings.twitterUrl %>" target="_blank" rel="noopener">Twitter</a><% } %>
+        <% if (settings.youtubeUrl) { %><a href="<%= settings.youtubeUrl %>" target="_blank" rel="noopener">YouTube</a><% } %>
+        <a href="/contact">Contact</a>
+      </div>
+      <p class="muted small">&copy; <%= new Date().getFullYear() %> <%= settings.siteName %>. All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="/js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<%- include('../partials/public-header') %>
+<div class="container section empty-state">
+  <h1>Something went wrong</h1>
+  <p class="muted"><%= typeof message !== 'undefined' ? message : 'Please try again.' %></p>
+  <a class="btn btn-primary" href="/">Back to home</a>
+</div>
+<%- include('../partials/public-footer') %>

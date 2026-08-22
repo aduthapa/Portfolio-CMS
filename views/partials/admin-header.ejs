@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= title %> — <%= settings.siteName %> Admin</title>
+  <% if (settings.faviconUrl) { %><link rel="icon" href="<%= settings.faviconUrl %>" /><% } %>
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/admin.css" />
+  <style>:root { --brand: <%= settings.primaryColor %>; }</style>
+</head>
+<body class="admin-body">
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="adminSidebar">
+      <a href="/admin" class="admin-brand"><%= settings.siteName %></a>
+      <nav class="admin-nav">
+        <a href="/admin" class="<%= currentPath === '/admin' || currentPath === '/admin/' ? 'active' : '' %>">Dashboard</a>
+        <a href="/admin/profiles" class="<%= currentPath.startsWith('/admin/profiles') ? 'active' : '' %>">Profiles</a>
+        <a href="/admin/inquiries" class="<%= currentPath.startsWith('/admin/inquiries') ? 'active' : '' %>">Inquiries</a>
+        <a href="/admin/media" class="<%= currentPath.startsWith('/admin/media') ? 'active' : '' %>">Media library</a>
+        <a href="/admin/settings" class="<%= currentPath.startsWith('/admin/settings') ? 'active' : '' %>">Settings</a>
+        <% if (currentUser && currentUser.role === 'ADMIN') { %>
+        <a href="/admin/users" class="<%= currentPath.startsWith('/admin/users') ? 'active' : '' %>">Team</a>
+        <% } %>
+      </nav>
+      <div class="admin-sidebar-footer">
+        <a href="/" target="_blank" rel="noopener">&larr; View public site</a>
+      </div>
+    </aside>
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <button class="nav-toggle" id="sidebarToggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+        <h1 class="admin-page-title"><%= title %></h1>
+        <div class="admin-topbar-user">
+          <% if (currentUser) { %>
+            <span><%= currentUser.name %> <span class="badge badge-muted"><%= currentUser.role %></span></span>
+            <form method="post" action="/admin/logout"><button class="btn btn-ghost btn-sm" type="submit">Sign out</button></form>
+          <% } %>
+        </div>
+      </header>
+      <div class="admin-content">
+        <%- include('flash') %>
