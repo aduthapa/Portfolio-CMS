@@ -1,10 +1,23 @@
 <% if (typeof flashSuccess !== 'undefined' && flashSuccess.length) { %>
   <% flashSuccess.forEach(function (msg) { %>
-    <div class="alert alert-success"><%= msg %></div>
+    <div class="alert alert-success" data-alert><%= msg %><button type="button" class="alert-close" aria-label="Dismiss" data-alert-close>&times;</button></div>
   <% }) %>
 <% } %>
 <% if (typeof flashError !== 'undefined' && flashError.length) { %>
   <% flashError.forEach(function (msg) { %>
-    <div class="alert alert-error"><%= msg %></div>
+    <div class="alert alert-error" data-alert><%= msg %><button type="button" class="alert-close" aria-label="Dismiss" data-alert-close>&times;</button></div>
   <% }) %>
 <% } %>
+<script>
+  (function () {
+    document.querySelectorAll('[data-alert]').forEach(function (el) {
+      var hide = function () {
+        el.classList.add('alert-hide');
+        setTimeout(function () { el.remove(); }, 400);
+      };
+      var closeBtn = el.querySelector('[data-alert-close]');
+      if (closeBtn) closeBtn.addEventListener('click', hide);
+      setTimeout(hide, 6000);
+    });
+  })();
+</script>
