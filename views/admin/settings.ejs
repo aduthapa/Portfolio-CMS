@@ -1,0 +1,44 @@
+<%- include('../partials/admin-header') %>
+
+<form method="post" action="/admin/settings?_method=PUT" enctype="multipart/form-data" class="stack-lg">
+  <div class="panel">
+    <h2>Site identity</h2>
+    <div class="form-grid-2">
+      <label class="field"><span>Site name</span><input type="text" name="siteName" value="<%= settings.siteName %>" required /></label>
+      <label class="field"><span>Primary color</span><input type="color" name="primaryColor" value="<%= settings.primaryColor %>" /></label>
+      <label class="field full-width"><span>Tagline</span><input type="text" name="tagline" value="<%= settings.tagline || '' %>" /></label>
+      <label class="field"><span>Contact email</span><input type="email" name="contactEmail" value="<%= settings.contactEmail || '' %>" /></label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Branding images</h2>
+    <div class="form-grid-2">
+      <label class="field">
+        <span>Logo</span>
+        <input type="file" name="logo" accept="image/*" class="image-input" data-preview="logoPreview" />
+        <img id="logoPreview" class="image-preview" src="<%= settings.logoUrl || '' %>" style="<%= settings.logoUrl ? '' : 'display:none' %>" />
+      </label>
+      <label class="field">
+        <span>Favicon</span>
+        <input type="file" name="favicon" accept="image/*" class="image-input" data-preview="faviconPreview" />
+        <img id="faviconPreview" class="image-preview" src="<%= settings.faviconUrl || '' %>" style="<%= settings.faviconUrl ? '' : 'display:none' %>" />
+      </label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Social links</h2>
+    <div class="form-grid-2">
+      <label class="field"><span>Instagram</span><input type="url" name="instagramUrl" value="<%= settings.instagramUrl || '' %>" /></label>
+      <label class="field"><span>Twitter / X</span><input type="url" name="twitterUrl" value="<%= settings.twitterUrl || '' %>" /></label>
+      <label class="field"><span>YouTube</span><input type="url" name="youtubeUrl" value="<%= settings.youtubeUrl || '' %>" /></label>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Save settings</button>
+  </div>
+</form>
+
+<%- include('../partials/admin-footer') %>

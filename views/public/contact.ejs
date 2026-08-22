@@ -1,0 +1,21 @@
+<%- include('../partials/public-header') %>
+
+<section class="container section narrow">
+  <h1>Contact us</h1>
+  <p class="muted">Have a general question, booking request, or press inquiry? Send us a message.</p>
+  <div class="panel">
+    <form method="post" action="/contact" class="stack">
+      <label class="field"><span>Name</span><input type="text" name="name" required /></label>
+      <label class="field"><span>Email</span><input type="email" name="email" required /></label>
+      <label class="field"><span>Phone</span><input type="tel" name="phone" /></label>
+      <label class="field"><span>Subject</span><input type="text" name="subject" /></label>
+      <label class="field"><span>Message</span><textarea name="message" rows="5" required></textarea></label>
+      <button class="btn btn-primary btn-block" type="submit">Send message</button>
+    </form>
+  </div>
+  <% if (settings.contactEmail) { %>
+  <p class="muted small">Or email us directly at <a href="mailto:<%= settings.contactEmail %>"><%= settings.contactEmail %></a></p>
+  <% } %>
+</section>
+
+<%- include('../partials/public-footer') %>

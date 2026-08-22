@@ -1,0 +1,28 @@
+<%- include('../../partials/admin-header') %>
+
+<% var isEdit = !!user; %>
+<form method="post" action="<%= isEdit ? '/admin/users/' + user.id + '?_method=PUT' : '/admin/users' %>" class="panel stack">
+  <div class="form-grid-2">
+    <label class="field"><span>Name *</span><input type="text" name="name" required value="<%= user ? user.name : '' %>" /></label>
+    <label class="field"><span>Email *</span><input type="email" name="email" required value="<%= user ? user.email : '' %>" /></label>
+    <label class="field">
+      <span>Role</span>
+      <select name="role">
+        <option value="EDITOR" <%= !user || user.role === 'EDITOR' ? 'selected' : '' %>>Editor</option>
+        <option value="ADMIN" <%= user && user.role === 'ADMIN' ? 'selected' : '' %>>Admin</option>
+      </select>
+    </label>
+    <label class="field"><span><%= isEdit ? 'New password (leave blank to keep current)' : 'Password *' %></span>
+      <input type="password" name="password" <%= isEdit ? '' : 'required' %> minlength="8" />
+    </label>
+    <% if (isEdit) { %>
+    <label class="field checkbox-field"><input type="checkbox" name="active" <%= user.active ? 'checked' : '' %> /> <span>Account active</span></label>
+    <% } %>
+  </div>
+  <div class="form-actions">
+    <a class="btn btn-ghost" href="/admin/users">Cancel</a>
+    <button class="btn btn-primary" type="submit"><%= isEdit ? 'Save changes' : 'Create user' %></button>
+  </div>
+</form>
+
+<%- include('../../partials/admin-footer') %>

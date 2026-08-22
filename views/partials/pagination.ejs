@@ -1,0 +1,16 @@
+<%
+// Expects: page, totalPages, pageList, basePath, and optional extraQuery (string, already encoded, no leading "&")
+var qs = typeof extraQuery !== 'undefined' && extraQuery ? '&' + extraQuery : '';
+%>
+<% if (totalPages > 1) { %>
+<nav class="pagination" aria-label="Pagination">
+  <a class="page-link <%= page <= 1 ? 'disabled' : '' %>" href="<%= basePath %>?page=<%= Math.max(1, page - 1) %><%= qs %>">&larr; Prev</a>
+  <% var prev = 0; %>
+  <% pageList.forEach(function (p) { %>
+    <% if (prev && p - prev > 1) { %><span class="page-ellipsis">&hellip;</span><% } %>
+    <a class="page-link <%= p === page ? 'active' : '' %>" href="<%= basePath %>?page=<%= p %><%= qs %>"><%= p %></a>
+    <% prev = p; %>
+  <% }) %>
+  <a class="page-link <%= page >= totalPages ? 'disabled' : '' %>" href="<%= basePath %>?page=<%= Math.min(totalPages, page + 1) %><%= qs %>">Next &rarr;</a>
+</nav>
+<% } %>

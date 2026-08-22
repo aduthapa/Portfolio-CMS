@@ -1,0 +1,105 @@
+<%- include('../../partials/admin-header') %>
+
+<% var isEdit = !!profile; %>
+<form method="post" action="<%= isEdit ? '/admin/profiles/' + profile.id + '?_method=PUT' : '/admin/profiles' %>" enctype="multipart/form-data" class="stack-lg">
+
+  <% if (isEdit) { %>
+  <div class="panel related-panel">
+    <h2>Manage content</h2>
+    <div class="related-links">
+      <a class="btn btn-secondary btn-sm" href="/admin/profiles/<%= profile.id %>/portfolio">Portfolio (<%= profile._count ? profile._count.portfolioItems : '' %>)</a>
+      <a class="btn btn-secondary btn-sm" href="/admin/profiles/<%= profile.id %>/press">Press</a>
+      <a class="btn btn-secondary btn-sm" href="/admin/profiles/<%= profile.id %>/awards">Awards</a>
+      <a class="btn btn-secondary btn-sm" href="/admin/profiles/<%= profile.id %>/events">Events</a>
+      <a class="btn btn-secondary btn-sm" href="/admin/profiles/<%= profile.id %>/testimonials">Testimonials</a>
+      <a class="btn btn-ghost btn-sm" href="/profiles/<%= profile.slug %>" target="_blank">View public page &rarr;</a>
+    </div>
+  </div>
+  <% } %>
+
+  <div class="panel">
+    <h2>Basics</h2>
+    <div class="form-grid-2">
+      <label class="field"><span>Full name *</span><input type="text" name="fullName" required value="<%= profile ? profile.fullName : '' %>" /></label>
+      <label class="field"><span>Stage / display name</span><input type="text" name="stageName" value="<%= profile && profile.stageName ? profile.stageName : '' %>" /></label>
+      <label class="field"><span>URL slug</span><input type="text" name="slug" placeholder="auto-generated from name" value="<%= profile ? profile.slug : '' %>" /></label>
+      <label class="field">
+        <span>Category</span>
+        <select name="category">
+          <% categoryOptions.forEach(function (c) { %>
+            <option value="<%= c.value %>" <%= profile && profile.category === c.value ? 'selected' : '' %>><%= c.label %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label class="field">
+        <span>Status</span>
+        <select name="status">
+          <option value="DRAFT" <%= !profile || profile.status === 'DRAFT' ? 'selected' : '' %>>Draft</option>
+          <option value="PUBLISHED" <%= profile && profile.status === 'PUBLISHED' ? 'selected' : '' %>>Published</option>
+          <option value="ARCHIVED" <%= profile && profile.status === 'ARCHIVED' ? 'selected' : '' %>>Archived</option>
+        </select>
+      </label>
+      <label class="field"><span>Location</span><input type="text" name="location" value="<%= profile && profile.location ? profile.location : '' %>" /></label>
+      <label class="field"><span>Website</span><input type="url" name="website" value="<%= profile && profile.website ? profile.website : '' %>" /></label>
+      <label class="field checkbox-field"><input type="checkbox" name="featured" <%= profile && profile.featured ? 'checked' : '' %> /> <span>Feature on homepage</span></label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Biography</h2>
+    <label class="field"><span>Short bio (max 280 chars, used on cards)</span><textarea name="shortBio" rows="2" maxlength="280"><%= profile && profile.shortBio ? profile.shortBio : '' %></textarea></label>
+    <label class="field"><span>Full biography</span><textarea name="bio" rows="8"><%= profile ? profile.bio : '' %></textarea></label>
+    <label class="field"><span>Tags (comma separated)</span><input type="text" name="tags" value="<%= tagNames %>" placeholder="e.g. pop, songwriter, touring" /></label>
+  </div>
+
+  <div class="panel">
+    <h2>Images</h2>
+    <div class="form-grid-2">
+      <label class="field">
+        <span>Avatar</span>
+        <input type="file" name="avatar" accept="image/*" class="image-input" data-preview="avatarPreview" />
+        <img id="avatarPreview" class="image-preview" src="<%= profile && profile.avatarUrl ? profile.avatarUrl : '' %>" style="<%= profile && profile.avatarUrl ? '' : 'display:none' %>" />
+      </label>
+      <label class="field">
+        <span>Cover image</span>
+        <input type="file" name="cover" accept="image/*" class="image-input" data-preview="coverPreview" />
+        <img id="coverPreview" class="image-preview image-preview-wide" src="<%= profile && profile.coverImageUrl ? profile.coverImageUrl : '' %>" style="<%= profile && profile.coverImageUrl ? '' : 'display:none' %>" />
+      </label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Social links</h2>
+    <div id="socialLinksList" class="stack">
+      <% socialLinks.forEach(function (link) { %>
+      <div class="inline-fields social-link-row">
+        <input type="text" name="socialPlatform" placeholder="Platform (Instagram, TikTok...)" value="<%= link.platform %>" />
+        <input type="url" name="socialUrl" placeholder="https://..." value="<%= link.url %>" />
+        <button type="button" class="btn btn-ghost btn-sm remove-row">&times;</button>
+      </div>
+      <% }) %>
+    </div>
+    <button type="button" class="btn btn-secondary btn-sm" id="addSocialLink">+ Add social link</button>
+  </div>
+
+  <div class="panel">
+    <h2>SEO</h2>
+    <label class="field"><span>Meta title</span><input type="text" name="metaTitle" value="<%= profile && profile.metaTitle ? profile.metaTitle : '' %>" /></label>
+    <label class="field"><span>Meta description</span><textarea name="metaDescription" rows="2" maxlength="320"><%= profile && profile.metaDescription ? profile.metaDescription : '' %></textarea></label>
+  </div>
+
+  <div class="form-actions">
+    <a class="btn btn-ghost" href="/admin/profiles">Cancel</a>
+    <button class="btn btn-primary" type="submit"><%= isEdit ? 'Save changes' : 'Create profile' %></button>
+  </div>
+</form>
+
+<template id="socialLinkTemplate">
+  <div class="inline-fields social-link-row">
+    <input type="text" name="socialPlatform" placeholder="Platform (Instagram, TikTok...)" />
+    <input type="url" name="socialUrl" placeholder="https://..." />
+    <button type="button" class="btn btn-ghost btn-sm remove-row">&times;</button>
+  </div>
+</template>
+
+<%- include('../../partials/admin-footer') %>

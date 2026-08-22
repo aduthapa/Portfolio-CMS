@@ -1,0 +1,140 @@
+<%- include('../partials/public-header') %>
+
+<section class="profile-hero" style="<%= profile.coverImageUrl ? `background-image:linear-gradient(180deg, rgba(10,10,20,.35), rgba(10,10,20,.85)), url('${profile.coverImageUrl}')` : '' %>">
+  <div class="container profile-hero-inner">
+    <div class="profile-avatar" style="<%= profile.avatarUrl ? `background-image:url('${profile.avatarUrl}')` : '' %>">
+      <% if (!profile.avatarUrl) { %><span><%= (profile.stageName || profile.fullName).slice(0,1) %></span><% } %>
+    </div>
+    <div>
+      <span class="badge badge-outline"><%= categoryLabel %></span>
+      <h1><%= profile.stageName || profile.fullName %></h1>
+      <% if (profile.stageName && profile.stageName !== profile.fullName) { %><p class="muted">(<%= profile.fullName %>)</p><% } %>
+      <p class="profile-hero-meta">
+        <% if (profile.location) { %><span>&#128205; <%= profile.location %></span><% } %>
+        <% if (profile.website) { %><a href="<%= profile.website %>" target="_blank" rel="noopener">&#128279; Website</a><% } %>
+      </p>
+      <% if (profile.socialLinks.length) { %>
+      <p class="profile-hero-social">
+        <% profile.socialLinks.forEach(function (s) { %>
+          <a href="<%= s.url %>" target="_blank" rel="noopener"><%= s.platform %></a>
+        <% }) %>
+      </p>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<div class="container section profile-layout">
+  <div class="profile-main">
+    <section class="panel">
+      <h2>About</h2>
+      <p class="prose"><%= profile.bio %></p>
+      <% if (profile.tags.length) { %>
+      <div class="chip-row">
+        <% profile.tags.forEach(function (t) { %><span class="chip chip-static">#<%= t.tag.name %></span><% }) %>
+      </div>
+      <% } %>
+    </section>
+
+    <% if (profile.portfolioItems.length) { %>
+    <section class="panel">
+      <h2>Portfolio</h2>
+      <div class="portfolio-grid">
+        <% profile.portfolioItems.forEach(function (item) { %>
+        <a class="portfolio-tile" href="<%= item.mediaUrl %>" target="_blank" rel="noopener" title="<%= item.title %>">
+          <% if (item.mediaType === 'VIDEO') { %>
+            <video src="<%= item.mediaUrl %>" muted></video>
+            <span class="portfolio-tile-play">&#9658;</span>
+          <% } else { %>
+            <img src="<%= item.mediaUrl %>" alt="<%= item.title %>" loading="lazy" />
+          <% } %>
+          <span class="portfolio-tile-caption"><%= item.title %></span>
+        </a>
+        <% }) %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (profile.pressMentions.length) { %>
+    <section class="panel">
+      <h2>Press</h2>
+      <ul class="list-simple">
+        <% profile.pressMentions.forEach(function (p) { %>
+        <li>
+          <div>
+            <% if (p.url) { %><a href="<%= p.url %>" target="_blank" rel="noopener"><strong><%= p.title %></strong></a><% } else { %><strong><%= p.title %></strong><% } %>
+            <span class="muted"> &middot; <%= p.publication %></span>
+          </div>
+          <% if (p.publishedAt) { %><span class="muted small"><%= p.publishedAt.toDateString() %></span><% } %>
+        </li>
+        <% }) %>
+      </ul>
+    </section>
+    <% } %>
+
+    <% if (profile.testimonials.length) { %>
+    <section class="panel">
+      <h2>Testimonials</h2>
+      <div class="testimonial-grid">
+        <% profile.testimonials.forEach(function (t) { %>
+        <blockquote class="testimonial-card">
+          <% if (t.rating) { %><div class="stars">
+            <% for (var i = 0; i < 5; i++) { %><span class="<%= i < t.rating ? 'star-filled' : 'star-empty' %>">&#9733;</span><% } %>
+          </div><% } %>
+          <p>&ldquo;<%= t.quote %>&rdquo;</p>
+          <footer>&mdash; <%= t.authorName %><% if (t.authorRole) { %>, <span class="muted"><%= t.authorRole %></span><% } %></footer>
+        </blockquote>
+        <% }) %>
+      </div>
+    </section>
+    <% } %>
+  </div>
+
+  <aside class="profile-sidebar">
+    <% if (profile.awards.length) { %>
+    <section class="panel">
+      <h2>Awards</h2>
+      <ul class="list-simple">
+        <% profile.awards.forEach(function (a) { %>
+        <li>
+          <div><strong><%= a.title %></strong><% if (a.organization) { %><div class="muted small"><%= a.organization %></div><% } %></div>
+          <% if (a.year) { %><span class="badge badge-muted"><%= a.year %></span><% } %>
+        </li>
+        <% }) %>
+      </ul>
+    </section>
+    <% } %>
+
+    <% if (profile.events.length) { %>
+    <section class="panel">
+      <h2>Upcoming &amp; past events</h2>
+      <ul class="list-simple">
+        <% profile.events.forEach(function (e) { %>
+        <li>
+          <div>
+            <% if (e.url) { %><a href="<%= e.url %>" target="_blank" rel="noopener"><strong><%= e.title %></strong></a><% } else { %><strong><%= e.title %></strong><% } %>
+            <% if (e.location) { %><div class="muted small"><%= e.location %></div><% } %>
+          </div>
+          <span class="muted small"><%= e.startDate.toDateString() %></span>
+        </li>
+        <% }) %>
+      </ul>
+    </section>
+    <% } %>
+
+    <section class="panel" id="booking">
+      <h2>Book / Inquire</h2>
+      <p class="muted small">Interested in working with <%= profile.stageName || profile.fullName %>? Send an inquiry.</p>
+      <form method="post" action="/profiles/<%= profile.slug %>/inquiries" class="stack">
+        <label class="field"><span>Name</span><input type="text" name="name" required /></label>
+        <label class="field"><span>Email</span><input type="email" name="email" required /></label>
+        <label class="field"><span>Phone</span><input type="tel" name="phone" /></label>
+        <label class="field"><span>Subject</span><input type="text" name="subject" /></label>
+        <label class="field"><span>Message</span><textarea name="message" rows="4" required></textarea></label>
+        <button class="btn btn-primary btn-block" type="submit">Send inquiry</button>
+      </form>
+    </section>
+  </aside>
+</div>
+
+<%- include('../partials/public-footer') %>

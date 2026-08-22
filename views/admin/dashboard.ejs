@@ -1,0 +1,70 @@
+<%- include('../partials/admin-header') %>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <span class="stat-value"><%= stats.profileCount %></span>
+    <span class="stat-label">Total profiles</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value"><%= stats.publishedCount %></span>
+    <span class="stat-label">Published</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value"><%= stats.portfolioCount %></span>
+    <span class="stat-label">Portfolio items</span>
+  </div>
+  <div class="stat-card <%= stats.newInquiries > 0 ? 'stat-card-highlight' : '' %>">
+    <span class="stat-value"><%= stats.newInquiries %></span>
+    <span class="stat-label">New inquiries</span>
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Most viewed profiles</h2>
+      <a href="/admin/profiles" class="link">Manage profiles &rarr;</a>
+    </div>
+    <% if (topProfiles.length === 0) { %>
+      <p class="muted">No profiles yet. <a href="/admin/profiles/new">Create your first one</a>.</p>
+    <% } else { %>
+    <table class="table">
+      <thead><tr><th>Name</th><th>Category</th><th>Views</th><th>Status</th></tr></thead>
+      <tbody>
+        <% topProfiles.forEach(function (p) { %>
+        <tr>
+          <td><a href="/admin/profiles/<%= p.id %>/edit"><%= p.stageName || p.fullName %></a></td>
+          <td><%= p.category %></td>
+          <td><%= p.viewCount %></td>
+          <td><span class="badge badge-<%= p.status.toLowerCase() %>"><%= p.status %></span></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } %>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Recent inquiries</h2>
+      <a href="/admin/inquiries" class="link">View all &rarr;</a>
+    </div>
+    <% if (recentInquiries.length === 0) { %>
+      <p class="muted">No inquiries yet.</p>
+    <% } else { %>
+    <ul class="list-simple">
+      <% recentInquiries.forEach(function (i) { %>
+      <li>
+        <div>
+          <strong><%= i.name %></strong>
+          <span class="muted"> &middot; <%= i.profile ? (i.profile.stageName || i.profile.fullName) : 'General inquiry' %></span>
+        </div>
+        <span class="badge badge-<%= i.status.toLowerCase() %>"><%= i.status.replace('_', ' ') %></span>
+      </li>
+      <% }) %>
+    </ul>
+    <% } %>
+  </section>
+</div>
+
+<%- include('../partials/admin-footer') %>

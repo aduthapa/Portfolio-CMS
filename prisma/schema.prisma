@@ -1,0 +1,241 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+enum ProfileStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ProfileCategory {
+  CELEBRITY
+  INFLUENCER
+  MUSICIAN
+  ACTOR
+  MODEL
+  VISUAL_ARTIST
+  ATHLETE
+  CREATOR
+  OTHER
+}
+
+enum InquiryStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  ARCHIVED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(EDITOR)
+  avatarUrl    String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  managedProfiles Profile[] @relation("ProfileManager")
+  mediaUploads    MediaAsset[]
+
+  @@map("users")
+}
+
+model Profile {
+  id              Int             @id @default(autoincrement())
+  slug            String          @unique
+  fullName        String
+  stageName       String?
+  category        ProfileCategory @default(OTHER)
+  bio             String          @db.Text
+  shortBio        String?         @db.VarChar(280)
+  avatarUrl       String?         @db.Text
+  coverImageUrl   String?         @db.Text
+  location        String?
+  website         String?
+  featured        Boolean         @default(false)
+  status          ProfileStatus   @default(DRAFT)
+  metaTitle       String?
+  metaDescription String?         @db.VarChar(320)
+  viewCount       Int             @default(0)
+
+  manager   User? @relation("ProfileManager", fields: [managerId], references: [id], onDelete: SetNull)
+  managerId Int?
+
+  tags           ProfileTag[]
+  socialLinks    SocialLink[]
+  portfolioItems PortfolioItem[]
+  pressMentions  PressMention[]
+  awards         Award[]
+  events         Event[]
+  testimonials   Testimonial[]
+  inquiries      Inquiry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([status])
+  @@map("profiles")
+}
+
+model Tag {
+  id       Int          @id @default(autoincrement())
+  name     String       @unique
+  slug     String       @unique
+  profiles ProfileTag[]
+
+  @@map("tags")
+}
+
+model ProfileTag {
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId Int
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     Int
+
+  @@id([profileId, tagId])
+  @@map("profile_tags")
+}
+
+model SocialLink {
+  id        Int     @id @default(autoincrement())
+  platform  String
+  url       String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId Int
+
+  @@map("social_links")
+}
+
+model PortfolioItem {
+  id           Int       @id @default(autoincrement())
+  profile      Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId    Int
+  title        String
+  description  String?   @db.Text
+  mediaType    MediaType @default(IMAGE)
+  mediaUrl     String  @db.Text
+  thumbnailUrl String? @db.Text
+  category     String?
+  featured     Boolean   @default(false)
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([profileId, sortOrder])
+  @@map("portfolio_items")
+}
+
+model PressMention {
+  id          Int       @id @default(autoincrement())
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId   Int
+  title       String
+  publication String
+  url         String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@map("press_mentions")
+}
+
+model Award {
+  id           Int      @id @default(autoincrement())
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId    Int
+  title        String
+  organization String?
+  year         Int?
+  createdAt    DateTime @default(now())
+
+  @@map("awards")
+}
+
+model Event {
+  id        Int       @id @default(autoincrement())
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId Int
+  title     String
+  location  String?
+  startDate DateTime
+  url       String?
+  createdAt DateTime  @default(now())
+
+  @@map("events")
+}
+
+model Testimonial {
+  id         Int      @id @default(autoincrement())
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId  Int
+  authorName String
+  authorRole String?
+  quote      String   @db.Text
+  rating     Int?
+  createdAt  DateTime @default(now())
+
+  @@map("testimonials")
+}
+
+model Inquiry {
+  id        Int           @id @default(autoincrement())
+  profile   Profile?      @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  profileId Int?
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String        @db.Text
+  status    InquiryStatus @default(NEW)
+  createdAt DateTime      @default(now())
+
+  @@map("inquiries")
+}
+
+model MediaAsset {
+  id           Int       @id @default(autoincrement())
+  fileName     String
+  url          String
+  mimeType     String
+  size         Int
+  mediaType    MediaType @default(IMAGE)
+  uploadedBy   User?     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  uploadedById Int?
+  createdAt    DateTime  @default(now())
+
+  @@map("media_assets")
+}
+
+model SiteSetting {
+  id           Int     @id @default(1)
+  siteName     String  @default("Portfolio CMS")
+  tagline      String?
+  logoUrl      String? @db.Text
+  faviconUrl   String? @db.Text
+  primaryColor String  @default("#7c3aed")
+  contactEmail String?
+  instagramUrl String?
+  twitterUrl   String?
+  youtubeUrl   String?
+
+  @@map("site_settings")
+}

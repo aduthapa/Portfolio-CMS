@@ -1,0 +1,54 @@
+<%- include('../../partials/admin-header') %>
+
+<div class="toolbar">
+  <form method="get" class="filter-bar">
+    <input type="search" name="q" value="<%= q %>" placeholder="Search profiles..." />
+    <select name="status">
+      <option value="">All statuses</option>
+      <option value="DRAFT" <%= status === 'DRAFT' ? 'selected' : '' %>>Draft</option>
+      <option value="PUBLISHED" <%= status === 'PUBLISHED' ? 'selected' : '' %>>Published</option>
+      <option value="ARCHIVED" <%= status === 'ARCHIVED' ? 'selected' : '' %>>Archived</option>
+    </select>
+    <button class="btn btn-secondary" type="submit">Filter</button>
+  </form>
+  <a class="btn btn-primary" href="/admin/profiles/new">+ New profile</a>
+</div>
+
+<div class="panel">
+  <% if (profiles.length === 0) { %>
+    <p class="muted">No profiles yet. <a href="/admin/profiles/new">Create your first one</a>.</p>
+  <% } else { %>
+  <table class="table">
+    <thead><tr><th>Name</th><th>Category</th><th>Status</th><th>Portfolio</th><th>Inquiries</th><th>Updated</th><th></th></tr></thead>
+    <tbody>
+      <% profiles.forEach(function (p) { %>
+      <tr>
+        <td>
+          <a href="/admin/profiles/<%= p.id %>/edit"><strong><%= p.stageName || p.fullName %></strong></a>
+          <% if (p.featured) { %><span class="badge badge-featured">Featured</span><% } %>
+        </td>
+        <td><%= p.category %></td>
+        <td><span class="badge badge-<%= p.status.toLowerCase() %>"><%= p.status %></span></td>
+        <td><a class="link" href="/admin/profiles/<%= p.id %>/portfolio"><%= p._count.portfolioItems %> items</a></td>
+        <td><%= p._count.inquiries %></td>
+        <td class="muted small"><%= p.updatedAt.toDateString() %></td>
+        <td class="table-actions">
+          <a class="btn btn-sm btn-ghost" href="/profiles/<%= p.slug %>" target="_blank">View</a>
+          <a class="btn btn-sm btn-ghost" href="/admin/profiles/<%= p.id %>/edit">Edit</a>
+          <form method="post" action="/admin/profiles/<%= p.id %>?_method=DELETE" onsubmit="return confirm('Delete this profile and all of its portfolio content? This cannot be undone.');">
+            <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
+
+<%- include('../../partials/pagination', {
+  page: page, totalPages: totalPages, pageList: pageList, basePath: '/admin/profiles',
+  extraQuery: 'q=' + encodeURIComponent(q) + '&status=' + encodeURIComponent(status)
+}) %>
+
+<%- include('../../partials/admin-footer') %>
