@@ -35,6 +35,7 @@ here because:
 | Database | MySQL, via Prisma ORM |
 | Auth | Session-based (bcrypt password hashes, MySQL-backed session store) |
 | File uploads | Multer, stored on disk under `public/uploads/` |
+| Email | Nodemailer over SMTP, for password-reset one-time codes |
 
 A single Express process serves everything — no separate frontend build or
 hosting needed, which matches how cPanel's "Setup Node.js App" expects an
@@ -60,6 +61,12 @@ app to be structured (one startup file, one process, managed by Passenger).
 - Media library for reusable uploads (e.g. site logo)
 - Site settings (name, tagline, brand color, logo, favicon, social links)
 - Team management with Admin/Editor roles
+- Self-service **sign-up** (`/admin/signup`) — new accounts are created as
+  inactive Editors and must be approved by an existing Admin from Team
+  before they can sign in
+- **Forgot password** (`/admin/forgot-password`) — emails a 6-digit,
+  single-use one-time code (10-minute expiry, rate-limited) to reset a
+  password without an admin's help
 
 ## Project structure
 
@@ -155,9 +162,29 @@ Still on the Setup Node.js App page for this application, add these
 | `SEED_ADMIN_EMAIL` | the email for your first admin login |
 | `SEED_ADMIN_PASSWORD` | a strong password (change it after first login) |
 | `MAX_UPLOAD_MB` | `25` (or your preferred limit) |
+| `SMTP_HOST` | your SMTP server, e.g. `mail.yourdomain.com` or your provider's host |
+| `SMTP_PORT` | `587` (STARTTLS) or `465` (implicit TLS) |
+| `SMTP_SECURE` | `true` if using port 465, otherwise `false` |
+| `SMTP_USER` | SMTP account username |
+| `SMTP_PASS` | SMTP account password |
+| `SMTP_FROM` | the "from" address for reset emails (defaults to `SMTP_USER` if left blank) |
 
 Do **not** set `PORT` — cPanel/Passenger injects it automatically for
 Node.js apps.
+
+`SMTP_*` is only required for the **forgot password** flow to actually send
+email — the rest of the app works fine without it. If it's left unset,
+forgot-password requests still respond normally (to avoid leaking which
+emails have accounts) but no email goes out; check the app's error log if
+users report never receiving a code.
+
+**A note on passwords with special characters in this table:** cPanel's
+"Enter to the virtual environment" terminal command exports these values
+into your shell, and characters like `$`, `!`, and `*` can be misread as
+shell syntax there (e.g. `$!` looks like a shell variable). This doesn't
+affect the running app — Passenger reads the values directly — but if you
+ever need to reference one of these values by hand in the terminal (e.g.
+pasting a password), wrap it in single quotes: `'your$pass!here'`.
 
 ### 5. Install, migrate, and seed
 
@@ -194,6 +221,39 @@ npm run prisma:migrate     # if the schema changed
 ```
 Then click **Restart** in Setup Node.js App.
 
+## Troubleshooting on cPanel's Node.js Selector
+
+Two quirks show up reliably on cPanel's shared-hosting Node.js environment
+(CloudLinux's Node Selector + Passenger), because it symlinks `node_modules`
+out into a separate `nodevenv` tree instead of keeping it inside your app
+folder:
+
+**"Could not find Prisma Schema" during `npm install`.** The `postinstall`
+hook (`prisma generate`) can run with the wrong working directory in this
+setup, even though `prisma/schema.prisma` is right where it should be.
+Work around it by skipping the hook and generating manually:
+```bash
+npm install --ignore-scripts
+npx prisma generate
+```
+
+**`tsc: command not found` / `tsx: command not found` when building or
+seeding.** If `NODE_ENV=production` is set in your shell (which it usually
+is here, and should be), `npm install` skips `devDependencies` —
+`typescript` and `tsx` are both dev dependencies, needed only to build and
+seed, not to run the app. Force them in:
+```bash
+npm install --include=dev --ignore-scripts
+npm run build
+npm run prisma:seed
+```
+
+Always run these commands directly in the terminal (after
+`source .../nodevenv/.../activate && cd <app root>`) rather than the
+**"Run NPM Install"** button in the Setup Node.js App page — the button has
+been observed running from the wrong directory, triggering the first issue
+above.
+
 ## Security notes
 
 - Change the seeded admin password immediately after first login (Team →
@@ -203,3 +263,11 @@ Then click **Restart** in Setup Node.js App.
   would let cookies be forged.
 - Uploaded files are validated by MIME type and size (`MAX_UPLOAD_MB`)
   before being written to disk.
+- New sign-ups (`/admin/signup`) are created inactive and cannot sign in
+  until an existing Admin approves them from Team — this prevents anyone
+  who finds the sign-up page from granting themselves access.
+- Password reset codes are 6-digit, hashed at rest (never stored in
+  plaintext), single-use, expire after 10 minutes, are capped at 5 guesses,
+  and are rate-limited to one email per 60 seconds per account. The
+  forgot-password form always returns the same response whether or not the
+  submitted email has an account, to prevent user enumeration.
