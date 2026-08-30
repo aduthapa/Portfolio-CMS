@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { SiteSetting } from "@prisma/client";
 import { NavLinks } from "./NavLinks";
+import { getMenuItems } from "../../lib/menu";
 
-export function SiteHeader({ settings }: { settings: SiteSetting }) {
+export async function SiteHeader({ settings }: { settings: SiteSetting }) {
+  const menuItems = await getMenuItems();
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface">
       <div className="relative mx-auto flex max-w-[1120px] items-center justify-between px-5 py-4">
@@ -13,7 +15,7 @@ export function SiteHeader({ settings }: { settings: SiteSetting }) {
           )}
           <span>{settings.siteName}</span>
         </Link>
-        <NavLinks />
+        <NavLinks items={menuItems} />
       </div>
     </header>
   );

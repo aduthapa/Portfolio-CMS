@@ -1,15 +1,17 @@
 import { getSiteSettings } from "../../src/lib/settings";
-import { getVisiblePageBlocks } from "../../src/lib/blocks";
+import { getVisibleBlocksForPage } from "../../src/lib/blocks";
+import { getHomePage } from "../../src/lib/pages";
 import { getCurrentUser } from "../../src/lib/session";
 import { BlockRenderer } from "../../src/components/blocks/BlockRenderer";
 import { ButtonLink } from "../../src/components/ui/Button";
 
 export default async function HomePage() {
-  const [settings, blocks, currentUser] = await Promise.all([
+  const [settings, homePage, currentUser] = await Promise.all([
     getSiteSettings(),
-    getVisiblePageBlocks(),
+    getHomePage(),
     getCurrentUser(),
   ]);
+  const blocks = await getVisibleBlocksForPage(homePage.id);
 
   return (
     <>
@@ -31,7 +33,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[1120px] px-5 py-[60px] text-center">
           <p className="text-ink-muted">This page hasn&apos;t been built yet.</p>
           {currentUser && (
-            <ButtonLink href="/admin/builder" variant="primary" className="mt-4">
+            <ButtonLink href={`/admin/pages/${homePage.id}`} variant="primary" className="mt-4">
               Open the page builder →
             </ButtonLink>
           )}

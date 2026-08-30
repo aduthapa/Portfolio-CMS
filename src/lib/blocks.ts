@@ -34,12 +34,13 @@ export interface PageBlockWithEmbed {
   embedUrl: string | null;
 }
 
-// Mirrors src/routes/public.routes.ts's GET / handler: only visible
-// blocks, sorted, with a VIDEO block's embed URL resolved server-side so
-// the renderer never has to know about YouTube/Vimeo URL formats.
-export async function getVisiblePageBlocks(): Promise<PageBlockWithEmbed[]> {
+// Mirrors src/routes/public.routes.ts's old GET / handler, now scoped to
+// one Page: only visible blocks, sorted, with a VIDEO block's embed URL
+// resolved server-side so the renderer never has to know about
+// YouTube/Vimeo URL formats.
+export async function getVisibleBlocksForPage(pageId: number): Promise<PageBlockWithEmbed[]> {
   const blocks = await prisma.pageBlock.findMany({
-    where: { visible: true },
+    where: { pageId, visible: true },
     orderBy: { sortOrder: "asc" },
   });
 
@@ -51,4 +52,13 @@ export async function getVisiblePageBlocks(): Promise<PageBlockWithEmbed[]> {
     embedUrl:
       block.type === "VIDEO" ? getVideoEmbedUrl((block.content as unknown as VideoContent).url || "") : null,
   }));
+}
+
+// Admin views need every block (including hidden ones) for a page, in a
+// plain shape the block-editor forms can read back into inputs.
+export async function getAllBlocksForPage(pageId: number) {
+  return prisma.pageBlock.findMany({
+    where: { pageId },
+    orderBy: { sortOrder: "asc" },
+  });
 }

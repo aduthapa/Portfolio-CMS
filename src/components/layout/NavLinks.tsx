@@ -3,15 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/contact", label: "Contact" },
-];
+import type { ResolvedMenuItem } from "../../lib/menu";
 
 // Client component only for the active-link highlight + mobile toggle —
-// everything else in the header stays server-rendered.
-export function NavLinks() {
+// everything else in the header stays server-rendered. `items` comes from
+// the admin-editable menu (src/lib/menu.ts), not a hardcoded list.
+export function NavLinks({ items }: { items: ResolvedMenuItem[] }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -31,14 +28,14 @@ export function NavLinks() {
       <nav
         className={`${open ? "flex" : "hidden"} absolute left-0 right-0 top-16 flex-col gap-3.5 border-b border-border bg-surface p-5 md:static md:flex md:flex-row md:items-center md:gap-6 md:border-0 md:bg-transparent md:p-0`}
       >
-        {links.map((link) => (
+        {items.map((item) => (
           <Link
-            key={link.href}
-            href={link.href}
-            className={`font-semibold text-ink no-underline hover:text-brand ${pathname === link.href ? "text-brand" : ""}`}
+            key={item.id}
+            href={item.href}
+            className={`font-semibold text-ink no-underline hover:text-brand ${pathname === item.href ? "text-brand" : ""}`}
             onClick={() => setOpen(false)}
           >
-            {link.label}
+            {item.label}
           </Link>
         ))}
         <Link

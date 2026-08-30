@@ -268,8 +268,23 @@ enum BlockType {
 // A single ordered, drag-and-drop-arranged list of content blocks that
 // makes up the public homepage — the site is for one person, so there's
 // one page, not a page-per-profile structure.
+model Page {
+  id        Int         @id @default(autoincrement())
+  slug      String      @unique @db.VarChar(190)
+  title     String      @db.VarChar(190)
+  isHome    Boolean     @default(false)
+  blocks    PageBlock[]
+  menuItems MenuItem[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("pages")
+}
+
 model PageBlock {
   id        Int       @id @default(autoincrement())
+  page      Page      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId    Int
   type      BlockType
   content   Json
   sortOrder Int       @default(0)
@@ -277,6 +292,22 @@ model PageBlock {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  @@index([sortOrder])
+  @@index([pageId, sortOrder])
   @@map("page_blocks")
+}
+
+// A nav item either points at an internal Page (pageId) or a raw URL
+// (e.g. "/contact", "/admin", or an external link) — exactly one is set.
+model MenuItem {
+  id        Int      @id @default(autoincrement())
+  label     String   @db.VarChar(60)
+  url       String?  @db.VarChar(500)
+  page      Page?    @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId    Int?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@map("menu_items")
 }
