@@ -46,6 +46,7 @@ export function createApp(): Express {
     res.locals.currentUser = null;
     res.locals.flashSuccess = [];
     res.locals.flashError = [];
+    res.locals.blocks = [];
     res.locals.settings = {
       siteName: "Portfolio CMS",
       tagline: null,
