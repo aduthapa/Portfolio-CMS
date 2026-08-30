@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+:root {
+  --brand: #7c3aed;
+  --brand-dark: #5b21b6;
+  --ink: #16151d;
+  --ink-muted: #6b6875;
+  --surface: #ffffff;
+  --surface-alt: #f7f6fb;
+  --border: #e7e5ee;
+  --success: #15803d;
+  --success-bg: #dcfce7;
+  --error: #b91c1c;
+  --error-bg: #fee2e2;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #f2f1f7;
+    --ink-muted: #a7a3b5;
+    --surface: #1b1a24;
+    --surface-alt: #131218;
+    --border: #302e3c;
+  }
+}
+
+/* Registers the CSS variables above as real Tailwind theme colors, so
+   utilities like bg-brand / text-ink-muted / border-border resolve through
+   the variable instead of a baked-in literal — an admin-edited
+   SiteSetting.primaryColor (which overrides --brand at runtime, see
+   app/layout.tsx) takes effect with no rebuild. */
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --radius-lg: var(--radius);
+  --radius-md: var(--radius-sm);
+}
+
+body {
+  background: var(--color-surface-alt);
+  color: var(--color-ink);
+}
