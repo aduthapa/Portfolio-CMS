@@ -1,12 +1,15 @@
 import type { PageBlock } from "@prisma/client";
 import type {
   ButtonContent,
+  CarouselContent,
   GalleryContent,
   HeadingContent,
+  IconContent,
   ImageContent,
   TextContent,
   VideoContent,
 } from "../../lib/blocks";
+import { ICON_NAMES, Icon } from "../icons/IconSet";
 
 // Per-type fields, matching the content shapes buildBlockContent() in
 // src/lib/actions/pages.ts writes — same fields the old
@@ -89,6 +92,40 @@ export function BlockEditForm({ block }: { block: PageBlock }) {
         <Field label="YouTube / Vimeo URL">
           <input name="url" defaultValue={c.url} maxLength={500} className={inputClass} />
         </Field>
+      );
+    }
+    case "CAROUSEL": {
+      const c = block.content as unknown as CarouselContent;
+      return (
+        <Field label="Image URLs (one per line)">
+          <textarea name="urls" defaultValue={c.images?.map((i) => i.url).join("\n")} rows={4} className={inputClass} />
+        </Field>
+      );
+    }
+    case "ICON": {
+      const c = block.content as unknown as IconContent;
+      return (
+        <div className="flex flex-col gap-3">
+          <Field label="Icon">
+            <div className="grid grid-cols-7 gap-2">
+              {ICON_NAMES.map((name) => (
+                <label
+                  key={name}
+                  className="flex cursor-pointer flex-col items-center gap-1 rounded-md border border-border p-2 has-[:checked]:border-brand has-[:checked]:bg-brand/10"
+                >
+                  <input type="radio" name="icon" value={name} defaultChecked={c.icon === name} className="sr-only" />
+                  <Icon name={name} className="h-5 w-5 text-ink" />
+                </label>
+              ))}
+            </div>
+          </Field>
+          <Field label="Label (optional)">
+            <input name="label" defaultValue={c.label} maxLength={60} className={inputClass} />
+          </Field>
+          <Field label="Link URL (optional)">
+            <input name="url" defaultValue={c.url} maxLength={500} className={inputClass} />
+          </Field>
+        </div>
       );
     }
     case "DIVIDER":

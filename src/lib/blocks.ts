@@ -25,6 +25,14 @@ export interface ButtonContent {
 export interface VideoContent {
   url: string;
 }
+export interface CarouselContent {
+  images: { url: string; caption?: string }[];
+}
+export interface IconContent {
+  icon: string;
+  label?: string;
+  url?: string;
+}
 
 export interface PageBlockWithEmbed {
   id: number;

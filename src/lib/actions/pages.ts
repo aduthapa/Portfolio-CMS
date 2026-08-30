@@ -91,29 +91,68 @@ function buildBlockContent(type: BlockType, formData: FormData) {
       };
     case "VIDEO":
       return { url: String(formData.get("url") || "").slice(0, 500) };
+    case "CAROUSEL":
+      return {
+        images: String(formData.get("urls") || "")
+          .split("\n")
+          .map((u) => u.trim())
+          .filter(Boolean)
+          .slice(0, 30)
+          .map((url) => ({ url, caption: "" })),
+      };
+    case "ICON":
+      return {
+        icon: String(formData.get("icon") || "star"),
+        label: String(formData.get("label") || "").slice(0, 60),
+        url: String(formData.get("url") || "").slice(0, 500),
+      };
     case "DIVIDER":
     default:
       return {};
   }
 }
 
-export async function addBlock(pageId: number, type: BlockType, formData: FormData) {
-  const content = buildBlockContent(type, formData);
+// Returns the created row so the client builder can splice it straight
+// into local state instead of waiting on a full refetch.
+export async function addBlock(pageId: number, type: BlockType) {
+  const content = buildBlockContent(type, new FormData());
   const maxOrder = await prisma.pageBlock.aggregate({ where: { pageId }, _max: { sortOrder: true } });
-  await prisma.pageBlock.create({
+  const block = await prisma.pageBlock.create({
     data: { pageId, type, content, sortOrder: (maxOrder._max.sortOrder ?? -1) + 1 },
   });
   revalidatePath(`/admin/pages/${pageId}`);
   await revalidatePublicPage(pageId);
+  return block;
 }
 
+// Used when a widget is dragged from the palette and dropped at a
+// specific spot on the canvas (rather than clicked, which always
+// appends). Shifts every block at or after `index` down one slot first.
+export async function addBlockAt(pageId: number, type: BlockType, index: number) {
+  const content = buildBlockContent(type, new FormData());
+  const block = await prisma.$transaction(async (tx) => {
+    await tx.pageBlock.updateMany({
+      where: { pageId, sortOrder: { gte: index } },
+      data: { sortOrder: { increment: 1 } },
+    });
+    return tx.pageBlock.create({ data: { pageId, type, content, sortOrder: index } });
+  });
+  revalidatePath(`/admin/pages/${pageId}`);
+  await revalidatePublicPage(pageId);
+  return block;
+}
+
+// Returns the updated row so the client builder's live canvas preview can
+// patch its local state immediately instead of looking stale until the
+// next full navigation.
 export async function updateBlock(blockId: number, formData: FormData) {
   const block = await prisma.pageBlock.findUnique({ where: { id: blockId } });
-  if (!block) return;
+  if (!block) return null;
   const content = buildBlockContent(block.type, formData);
-  await prisma.pageBlock.update({ where: { id: blockId }, data: { content } });
+  const updated = await prisma.pageBlock.update({ where: { id: blockId }, data: { content } });
   revalidatePath(`/admin/pages/${block.pageId}`);
   await revalidatePublicPage(block.pageId);
+  return updated;
 }
 
 export async function deleteBlock(blockId: number) {

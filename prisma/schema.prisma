@@ -263,6 +263,8 @@ enum BlockType {
   BUTTON
   DIVIDER
   VIDEO
+  CAROUSEL
+  ICON
 }
 
 // A single ordered, drag-and-drop-arranged list of content blocks that

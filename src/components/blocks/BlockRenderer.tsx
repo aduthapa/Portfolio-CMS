@@ -1,13 +1,16 @@
 import type {
   ButtonContent,
+  CarouselContent,
   GalleryContent,
   HeadingContent,
+  IconContent,
   ImageContent,
   PageBlockWithEmbed,
   TextContent,
   VideoContent,
 } from "../../lib/blocks";
 import { ButtonLink } from "../ui/Button";
+import { Icon } from "../icons/IconSet";
 
 // One component per BlockType, dispatched below — mirrors
 // views/public/blocks/*.ejs's include('blocks/' + block.type.toLowerCase())
@@ -111,6 +114,45 @@ function VideoBlock({ content, embedUrl }: { content: VideoContent; embedUrl: st
   return null;
 }
 
+// CSS scroll-snap carousel — no JS/library needed for the swipe/scroll
+// interaction itself.
+function CarouselBlock({ content }: { content: CarouselContent }) {
+  if (!content.images?.length) return null;
+  return (
+    <div className="mx-auto max-w-[1120px] px-5 py-7">
+      <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
+        {content.images.map((img, i) => (
+          <figure key={i} className="w-[80%] shrink-0 snap-center sm:w-[45%] lg:w-[32%]">
+            {/* eslint-disable-next-line @next/next/no-img-element -- remote, admin-supplied URLs */}
+            <img src={img.url} alt={img.caption || ""} loading="lazy" className="aspect-[4/3] w-full rounded-lg object-cover" />
+            {img.caption && <figcaption className="mt-2 text-center text-sm text-ink-muted">{img.caption}</figcaption>}
+          </figure>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function IconBlock({ content }: { content: IconContent }) {
+  const inner = (
+    <div className="flex flex-col items-center gap-2 text-center">
+      <Icon name={content.icon} className="h-10 w-10 text-brand" />
+      {content.label && <span className="font-semibold text-ink">{content.label}</span>}
+    </div>
+  );
+  return (
+    <div className="mx-auto max-w-[1120px] px-5 py-7">
+      {content.url ? (
+        <a href={content.url} target="_blank" rel="noopener" className="inline-block no-underline">
+          {inner}
+        </a>
+      ) : (
+        inner
+      )}
+    </div>
+  );
+}
+
 function DividerBlock() {
   return (
     <div className="container mx-auto max-w-[1120px] px-5 py-7">
@@ -133,6 +175,10 @@ export function BlockRenderer({ block }: { block: PageBlockWithEmbed }) {
       return <ButtonBlock content={block.content as ButtonContent} />;
     case "VIDEO":
       return <VideoBlock content={block.content as VideoContent} embedUrl={block.embedUrl} />;
+    case "CAROUSEL":
+      return <CarouselBlock content={block.content as CarouselContent} />;
+    case "ICON":
+      return <IconBlock content={block.content as IconContent} />;
     case "DIVIDER":
       return <DividerBlock />;
     default:
